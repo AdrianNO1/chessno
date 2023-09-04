@@ -26,7 +26,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use('/sounds', express.static(path.join(__dirname, 'sounds')));
 
-app.get('/:id', function(req, res) {
+app.get('/game/:id', function(req, res) {
     const game = games.find(game => game.id === req.params.id);
     if (game) {
         res.sendFile(path.join(__dirname + '/game.html'));
@@ -62,14 +62,14 @@ app.post('/lobby', (req, res) => {
         //    res.sendFile(path.join(__dirname + '/game.html'));
         //})
 
-        res.redirect(303, "/" + id);
+        res.redirect(303, "/game/" + id);
     }
     else if (body.action == "join server"){
         var game = games.find(x => body.id === x.id)
         if (game){
             game.enough_players = true; // make this work with direct link
             game_state = "ongoing";     // this too
-            res.redirect(303, "/" + body.id);
+            res.redirect(303, "/game/" + body.id);
         }
         else{
             res.json({error: true, message: "That lobby doesn't exist"});
