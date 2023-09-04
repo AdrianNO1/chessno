@@ -30,22 +30,45 @@ let move_sound = new Audio("sounds/move.wav");
 let capture_sound = new Audio("sounds/capture.wav");
 let gameover_sound = new Audio("sounds/gameover.wav");
 
-var socket = io();
 let enough_players = false;
 let user;
 let id = window.location.href.split("/")[window.location.href.split("/").length-1];
-socket.emit('joined game', id);
 
-socket.on('start game', (x) => {
+Pusher.logToConsole = true;
+
+var pusher = new Pusher('136f1a7c7875e0106034', {
+    cluster: 'eu'
+});
+var channel = pusher.subscribe(id);
+
+function emit_move(type, x1, y1, x2, y2, user, id, game_over_condition){
+    let body;
+    if (type === "move"){
+        body = JSON.stringify({type: type, x1: x1, y1: y1, x2: x2, y2: y2, user: user, id: id, game_over_condition: game_over_condition});
+    } else if (type === "joined game"){
+        body = JSON.stringify({type: type, id: x1})
+    }
+    return fetch('http://10.56.176.186:3507/pusher/trigger', {
+        method: 'POST',
+        body: body,
+        headers: { 'Content-Type': 'application/json' }
+    }).then(response => response.json());
+}
+
+channel.bind('start game', function(data) {
     gamestart_sound.play().catch() //
     console.log('Game is starting!');
     enough_players = true;
-    user = x;
-    console.log("You are player", x)
     turn = "white";
-    color = x == 1 ? "white" : "black";
     initialize_board();
 });
+
+emit_move('joined game', id).then(response => {
+    user = response.firstplayer ? 1 : 2
+    console.log("You are player", user)
+    color = user === 1 ? "white" : "black";
+});
+
 
 function request_rematch(){
     document.getElementById("rematch").textContent = "This button does nothing"
@@ -61,36 +84,67 @@ function game_over(title, desc){
     document.getElementById("gameover").classList.remove("hidden")
 }
 
-socket.on("move", (x1, y1, x2, y2, player, id, game_over_condition) => {
-    if (player != user){
+channel.bind('move', function(data) {
+    if (data.user != user){
         emit = false;
         overwrite = true;
-        move_piece(x1, y1, x2, y2);
+        move_piece(data.x1, data.y1, data.x2, data.y2);
         turn = color
         overwrite = false;
 
     }
 
-    if (game_over_condition === "white checkmate"){
+    if (data.game_over_condition === "white checkmate"){
         if (color === "white"){
             game_over("You Lose!", "By checkmate")
         } else{
             game_over("You Win!", "By checkmate")
         }
     }
-    else if (game_over_condition === "black checkmate"){
+    else if (data.game_over_condition === "black checkmate"){
         if (color === "black"){
             game_over("You Lose!", "By checkmate")
         } else{
             game_over("You Win!", "By checkmate")
         }
     }
-    else if (game_over_condition === "stalemate"){
+    else if (data.game_over_condition === "stalemate"){
         game_over("Draw", "By stalemate")
-    } else if (game_over_condition === "repetition"){
+    } else if (data.game_over_condition === "repetition"){
         game_over("Draw", "By repetition")
     }
 });
+
+//socket.on("move", (x1, y1, x2, y2, player, id, game_over_condition) => {
+//    if (player != user){
+//        emit = false;
+//        overwrite = true;
+//        move_piece(x1, y1, x2, y2);
+//        turn = color
+//        overwrite = false;
+//
+//    }
+//
+//    if (game_over_condition === "white checkmate"){
+//        if (color === "white"){
+//            game_over("You Lose!", "By checkmate")
+//        } else{
+//            game_over("You Win!", "By checkmate")
+//        }
+//    }
+//    else if (game_over_condition === "black checkmate"){
+//        if (color === "black"){
+//            game_over("You Lose!", "By checkmate")
+//        } else{
+//            game_over("You Win!", "By checkmate")
+//        }
+//    }
+//    else if (game_over_condition === "stalemate"){
+//        game_over("Draw", "By stalemate")
+//    } else if (game_over_condition === "repetition"){
+//        game_over("Draw", "By repetition")
+//    }
+//});
 
 /* TODO
 
@@ -640,18 +694,18 @@ function move_piece(x1, y1, x2, y2, piece){
     if (emit && !castle_rook){
         if (turn === "white" && all_legal_moves_white.length === 0){
             if (white_in_check){
-                socket.emit("move", x1, y1, x2, y2, user, id, "white checkmate");
+                emit_move("move", x1, y1, x2, y2, user, id, "white checkmate");
             } else{
-                socket.emit("move", x1, y1, x2, y2, user, id, "stalemate");
+                emit_move("move", x1, y1, x2, y2, user, id, "stalemate");
             }
             gameover_sound.play();
             return;
         }
         else if (turn === "black" && all_legal_moves_black.length === 0){
             if (black_in_check){
-                socket.emit("move", x1, y1, x2, y2, user, id, "black checkmate");
+                emit_move("move", x1, y1, x2, y2, user, id, "black checkmate");
             } else{
-                socket.emit("move", x1, y1, x2, y2, user, id, "stalemate");
+                emit_move("move", x1, y1, x2, y2, user, id, "stalemate");
             }
             gameover_sound.play();
             return;
@@ -680,12 +734,12 @@ function move_piece(x1, y1, x2, y2, piece){
         }
         Object.values(counts).forEach(x => {
             if (x === 3){
-                socket.emit("move", x1, y1, x2, y2, user, id, "repetition");
+                emit_move("move", x1, y1, x2, y2, user, id, "repetition");
                 gameover_sound.play();
                 return;
             }
         })
-        socket.emit("move", x1, y1, x2, y2, user, id);
+        emit_move("move", x1, y1, x2, y2, user, id);
     }
 }
 

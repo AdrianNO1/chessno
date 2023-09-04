@@ -96,6 +96,9 @@
         .hidden{
             display: none;
         }
+        #promption{
+            position: relative;
+        }
     </style>
 
 </head>
@@ -189,10 +192,10 @@
             <button id="rematch" onclick="request_rematch()">Rematch</button>
         </div>
         <div id="promption">
-            <img src="assets/bq">
+            <!--<img src="assets/bq">--->
         </div>
     </table>
 </body>
-<script src="/socket.io/socket.io.js"></script>
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script src="/game.js"></script>
 </html>
