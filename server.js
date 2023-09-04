@@ -26,6 +26,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use('/sounds', express.static(path.join(__dirname, 'sounds')));
 
+app.get('/:id', function(req, res) {
+    const game = games.find(game => game.id === req.params.id);
+    if (game) {
+        res.sendFile(path.join(__dirname + '/game.html'));
+    } else {
+        res.status(404).send('Game not found');
+    }
+});
+
 app.get('/lobby', function(req, res) {
     res.sendFile(path.join(__dirname + '/lobby.html'));
 });
@@ -49,9 +58,9 @@ app.post('/lobby', (req, res) => {
         
         games.push({id: id, enough_players: false, players: [], game_state: "waiting for players"});
 
-        app.get("/" + id, function(req, res) {
-            res.sendFile(path.join(__dirname + '/game.html'));
-        })
+        //app.get("/" + id, function(req, res) {
+        //    res.sendFile(path.join(__dirname + '/game.html'));
+        //})
 
         res.redirect(303, "/" + id);
     }
@@ -95,32 +104,6 @@ app.post('/pusher/trigger', (req, res) => {
     payload.firstplayer = firstplayer
     res.send(payload);
 });
-
-//io.on('connection', (socket) => {
-//    socket.on('joined game', (gameId) => {
-//        let game = games.find(x => gameId === x.id);
-//        if (game) {
-//            game.players.push(socket);
-//            if (game.players.length === 2) {
-//                var i = 0
-//                game.players.forEach(playerSocket => {
-//                    i++
-//                    playerSocket.emit('start game', i);
-//                });
-//            }
-//        }
-//    });
-//    socket.on("move", (x1, y1, x2, y2, user, id, game_over_condition) => {
-//        let game = games.find(x => id.toString() === x.id);
-//        game.players.forEach(playerSocket => {
-//            if(game_over_condition){
-//                game.game_state = game_over_condition;
-//            }
-//            playerSocket.emit("move", x1, y1, x2, y2, user, id, game_over_condition);
-//        });
-//    })
-//});
-
 
 server.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
