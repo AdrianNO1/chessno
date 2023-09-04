@@ -7,7 +7,7 @@ function show_error_code(data){
 }
 
 function send(){
-    fetch('http://10.56.176.186:3507/lobby', {
+    fetch("https://odd-red-zebra-tie.cyclic.app/lobby", { //fetch('http://10.56.176.186:3507/lobby', {
         method: 'POST', // or 'GET'
         headers: {
             'Content-Type': 'application/json',
