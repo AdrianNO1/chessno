@@ -48,7 +48,7 @@ function emit_move(type, x1, y1, x2, y2, user, id, game_over_condition){
     } else if (type === "joined game"){
         body = JSON.stringify({type: type, id: x1})
     }
-    return fetch('http://10.56.176.186:3507/pusher/trigger', {
+    return fetch('https://odd-red-zebra-tie.cyclic.app/pusher/trigger', {
         method: 'POST',
         body: body,
         headers: { 'Content-Type': 'application/json' }
