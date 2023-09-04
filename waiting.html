@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Waiting Room</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/waiting.js"></script>
+
+    <style>
+        .hidden{
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+    <h1 id="waitingText">Waiting for other player...</h1>
+    <div id="messagesdiv"></div>
+    <input type="text" id="messagefield">
+    <button onclick="send()">Send</button>
+</body>
+</html>

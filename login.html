@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body{
+            margin: 0;
+        }
+        #host, #join{
+            background-color: gray;
+            border-radius: 20%;
+            font-size: 5em;
+            width: 2.2em;
+            height: 2.2em;
+        }
+        #aa{
+            text-align: center;
+        }
+        #idk{
+            text-align: center;
+        }
+        .hidden{
+            display: none;
+        }
+        #error{
+            color: red;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<script src="/client.js"></script>
+<body>
+    <div id="aa">
+        <button onclick="host()" id="host">Host</button>
+        <button onclick="join()" id="join">Join</button>
+    </div>
+    <br>
+    <div id="idk">
+        <p id="text">Host password:</p>
+        <input type="text" id="inputField">
+        <button onclick="send()">Join</button>
+        <p id="error"></p>
+    </div>
+</body>
+</html>

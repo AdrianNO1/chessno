@@ -1,0 +1,269 @@
+    let piece_type = board2[y][x].toLowerCase()
+    let piece_is_white = board2[y][x].toUpperCase() === board2[y][x]
+    var moves = []
+    function is_enemy(x2, y2){
+        if (board2[y2][x2] === ""){
+            return false
+        }
+        
+        return board2[y][x].toUpperCase() === board2[y][x] ? board2[y2][x2].toLowerCase() === board2[y2][x2] : board2[y2][x2].toUpperCase() === board2[y2][x2]
+    }
+    function is_empty_or_enemy(x2, y2){
+        if (board2[y2][x2] === ""){
+            return true
+        }
+        
+        return board2[y][x].toUpperCase() === board2[y][x] ? board2[y2][x2].toLowerCase() === board2[y2][x2] : board2[y2][x2].toUpperCase() === board2[y2][x2]
+    }
+    if (piece_type === "p" && !piece_is_white){
+        if (y+1 <= 7 && board2[y+1][x] === ""){
+            moves.push({x: x, y: y+1})
+            if (y === 1 && y+2 <= 7 && board2[y+2][x] === ""){
+                moves.push({x: x, y: y+2})
+            }
+        }
+
+        if (y+1 >= 0 && y+1 <= 7 && x+1 >= 0 && x+1 <= 7 && is_enemy(x+1, y+1)){
+            moves.push({x: x+1, y: y+1})
+        }
+        else if (y === 4 && x+1 <= 7 && whydidthefrenchhavetoinventenpassant[x+9]){
+            moves.push({x: x+1, y: y+1, special: enpassant})
+        }
+        if (y+1 >= 0 && y+1 <= 7 && x-1 >= 0 && x-1 <= 7 && is_enemy(x-1, y+1)){
+            moves.push({x: x-1, y: y+1})
+        } else if (y === 4 && x-1 >= 0 && whydidthefrenchhavetoinventenpassant[x+7]){
+            moves.push({x: x-1, y: y+1, special: enpassant})
+        }
+    }
+    else if (piece_type === "p" && piece_is_white){
+        if (y-1 >= 0 && board2[y-1][x] === ""){
+            moves.push({x: x, y: y-1})
+            if (y === 6 && y-2 >= 0 && board2[y-2][x] === ""){
+                moves.push({x: x, y: y-2})
+            }
+        }
+
+        if (y-1 >= 0 && y-1 <= 7 && x+1 >= 0 && x+1 <= 7 && is_enemy(x+1, y-1)){
+            moves.push({x: x+1, y: y-1})
+        } else if (y === 3 && x+1 <= 7 && whydidthefrenchhavetoinventenpassant[x+1]){
+            moves.push({x: x+1, y: y-1, special: enpassant})
+        }
+        if (y-1 >= 0 && y-1 <= 7 && x-1 >= 0 && x-1 <= 7 && is_enemy(x-1, y-1)){
+            moves.push({x: x-1, y: y-1})
+        } else if (y === 3 && x-1 >= 0 && whydidthefrenchhavetoinventenpassant[x-1]){
+            moves.push({x: x-1, y: y-1, special: enpassant})
+        }
+    }
+    
+    if (piece_type === "r" || piece_type === "q"){
+        for(let i = 1; i <= 8; i++){
+            if (y+i >= 0 && y+i <= 7){
+                if (board2[y+i][x] === ""){
+                    moves.push({x: x, y: y+i})
+                }
+                else if (is_enemy(x, y+i)){
+                    moves.push({x: x, y: y+i})
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+        }
+        for(let i = -1; i >= -7; i--){
+            if (y+i >= 0 && y+i <= 7){
+                if (board2[y+i][x] === ""){
+                    moves.push({x: x, y: y+i})
+                }
+                else if (is_enemy(x, y+i)){
+                    moves.push({x: x, y: y+i})
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+        }
+        for(let i = 1; i <= 8; i++){
+            if (x+i >= 0 && x+i <= 7){
+                if (board2[y][x+i] === ""){
+                    moves.push({x: x+i, y: y})
+                }
+                else if (is_enemy(x+i, y)){
+                    moves.push({x: x+i, y: y})
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+        }
+        for(let i = -1; i >= -7; i--){
+            if (x+i >= 0 && x+i <= 7){
+                if (board2[y][x+i] === ""){
+                    moves.push({x: x+i, y: y})
+                }
+                else if (is_enemy(x+i, y)){
+                    moves.push({x: x+i, y: y})
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+        }
+    }
+    if (piece_type == "b" || piece_type === "q"){
+        for(let i = 1; i <= 8; i++){
+            if (y+i >= 0 && y+i <= 7 && x+i >= 0 && x+i <= 7){
+                if (board2[y+i][x+i] === ""){
+                    moves.push({x: x+i, y: y+i})
+                }
+                else if (is_enemy(x+i, y+i)){
+                    moves.push({x: x+i, y: y+i})
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+        }
+        for(let i = -1; i >= -7; i--){
+            if (y+i >= 0 && y+i <= 7 && x+i >= 0 && x+i <= 7){
+                if (board2[y+i][x+i] === ""){
+                    moves.push({x: x+i, y: y+i})
+                }
+                else if (is_enemy(x+i, y+i)){
+                    moves.push({x: x+i, y: y+i})
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+        }
+        for(let i = 1; i <= 8; i++){
+            if (y+i >= 0 && y+i <= 7 && x-i >= 0 && x-i <= 7){
+                if (board2[y+i][x-i] === ""){
+                    moves.push({x: x-i, y: y+i})
+                }
+                else if (is_enemy(x-i, y+i)){
+                    moves.push({x: x-i, y: y+i})
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+        }
+        for(let i = -1; i >= -7; i--){
+            if (y+i >= 0 && y+i <= 7 && x-i >= 0 && x-i <= 7){
+                if (board2[y+i][x-i] === ""){
+                    moves.push({x: x-i, y: y+i})
+                }
+                else if (is_enemy(x-i, y+i)){
+                    moves.push({x: x-i, y: y+i})
+                    break;
+                }
+                else{
+                    break;
+                }
+            }
+        }
+    }
+    if (piece_type == "n"){
+        if (y+1 >= 0 && y+1 <= 7 && x+2 >= 0 && x+2 <= 7 && is_empty_or_enemy(x+2, y+1)){
+            moves.push({x: x+2, y: y+1})
+        }
+        if (y+1 >= 0 && y+1 <= 7 && x-2 >= 0 && x-2 <= 7 && is_empty_or_enemy(x-2, y+1)){
+            moves.push({x: x-2, y: y+1})
+        }
+        if (y-1 >= 0 && y-1 <= 7 && x+2 >= 0 && x+2 <= 7 && is_empty_or_enemy(x+2, y-1)){
+            moves.push({x: x+2, y: y-1})
+        }
+        if (y-1 >= 0 && y-1 <= 7 && x-2 >= 0 && x-2 <= 7 && is_empty_or_enemy(x-2, y-1)){
+            moves.push({x: x-2, y: y-1})
+        }
+        if (y+2 >= 0 && y+2 <= 7 && x+1 >= 0 && x+1 <= 7 && is_empty_or_enemy(x+1, y+2)){
+            moves.push({x: x+1, y: y+2})
+        }
+        if (y+2 >= 0 && y+2 <= 7 && x-1 >= 0 && x-1 <= 7 && is_empty_or_enemy(x-1, y+2)){
+            moves.push({x: x-1, y: y+2})
+        }
+        if (y-2 >= 0 && y-2 <= 7 && x+1 >= 0 && x+1 <= 7 && is_empty_or_enemy(x+1, y-2)){
+            moves.push({x: x+1, y: y-2})
+        }
+        if (y-2 >= 0 && y-2 <= 7 && x-1 >= 0 && x-1 <= 7 && is_empty_or_enemy(x-1, y-2)){
+            moves.push({x: x-1, y: y-2})
+        }
+
+    }
+    if (piece_type === "k"){
+        if (x+1 <= 7 && y+1 <= 7 && is_empty_or_enemy(x+1, y+1)){
+            moves.push({x: x+1, y: y+1})
+        }
+        if (x-1 >= 0 && y+1 <= 7 && is_empty_or_enemy(x-1, y+1)){
+            moves.push({x: x-1, y: y+1})
+        }
+        if (x+1 <= 7 && y-1 >= 0 && is_empty_or_enemy(x+1, y-1)){
+            moves.push({x: x+1, y: y-1})
+        }
+        if (x-1 >= 0 && y-1 >= 0 && is_empty_or_enemy(x-1, y-1)){
+            moves.push({x: x-1, y: y-1})
+        }
+        if (x+1 <= 7 && is_empty_or_enemy(x+1, y)){
+            moves.push({x: x+1, y: y})
+        }
+        if (x-1 >= 0 && is_empty_or_enemy(x-1, y)){
+            moves.push({x: x-1, y: y})
+        }
+        if (y-1 >= 0 && is_empty_or_enemy(x, y-1)){
+            moves.push({x: x, y: y-1})
+        }
+        if (y+1 <= 7 && is_empty_or_enemy(x, y+1)){
+            moves.push({x: x, y: y+1})
+        }
+
+        
+        let queenside_caste = can_castle[piece_is_white ? 3 : 1];
+        for(let i = 1; i <= 3; i++){
+            if (x+i >= 0 && x+i <= 7){
+                if (board2[y][x+i] !== "" || (piece_is_white ? all_legal_moves_black : all_legal_moves_white).some(move => move.x === x+i && move.y === y)){
+                    queenside_caste = false;
+                }
+            }
+        }
+        if (queenside_caste){
+            moves.push({x: x+2, y: y, special: castle})
+            moves.push({x: x+4, y: y, special: castle})
+        }
+        let kingside_caste = can_castle[piece_is_white ? 2 : 0];;
+        for(let i = -1; i >= -2; i--){
+            if (x+i >= 0 && x+i <= 7){
+                if (board2[y][x+i] !== "" || (piece_is_white ? all_legal_moves_black : all_legal_moves_white).some(move => move.x === x+i && move.y === y)){
+                    kingside_caste = false;
+                }
+            }
+        }
+        if (kingside_caste){
+            moves.push({x: x-2, y: y, special: castle})
+            moves.push({x: x-3, y: y, special: castle})
+        }
+    }
+
+    moves = moves.filter(move => {
+        var board2_copy = board2.map(function(arr) {
+            return arr.map(function(arr2) {
+                return arr2.slice();
+            });
+        });
+        if (move.special === enpassant){
+            board2_copy[y2+(board2_copy[y][x] === "P" ? 1 : -1)][move.x] = ""
+        }
+
+        board2_copy[move.y][move.x] = board2_copy[y][x];
+        board2_copy[y][x] = "";
+        return !is_check_for(piece_is_white ? "white" : "black")
+    })
+    return moves
+}

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>game</title>
+    <style>
+        body{
+            background-color: green;
+            padding: 0;
+            margin: 0px;
+        }
+        #chessboard{
+            z-index: 0;
+            position: relative;
+            top: 10px;
+            left: 10px;
+            border-collapse: collapse;
+            z-index: 0;
+        }
+        .light{
+            background-color: white;
+        }
+        .dark{
+            background-color: gray;
+        }
+        .light, .dark{
+            width: 64px;
+            height: 64px;
+            padding: 0;
+        }
+        .piece{
+            width: 4em;
+            height: 4em;
+            position: absolute;
+            left: 10px;
+            top: 10px;
+        }
+        .piece img{
+            width: 4em;
+            height: 4em;
+        }
+        .legal_move_indicator{
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            padding: 0;
+        }
+        .last_move_indicator{
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            padding: 0;
+            background-color: rgb(155, 199, 0, 0.7);
+        }
+        .check{
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            padding: 0;
+            background: radial-gradient(ellipse at center, rgb(255, 0, 0) 0%, rgb(231, 0, 0) 25%, rgba(169, 0, 0, 0) 89%, rgba(158, 0, 0, 0) 100%);
+        }
+        #gameover{
+            opacity: 95%;
+            z-index: 20;
+            left: 126px;
+            top: 196px;
+            border-radius: 30px;
+            position: absolute;
+            background-color: rgb(58, 58, 58);
+            width: 280px;
+            height: 140px;
+            padding: 0;
+            text-align: center;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+        #gameovertitle{
+            position: relative;
+            top: 2px;
+            color: rgb(255, 255, 255);
+            margin: 0;
+            height: 25px;
+        }
+        #gameoverdesc{
+            position: relative;
+            color: white;
+        }
+        #rematch{
+            background-color: rgb(67, 67, 208);
+            border-color: rgb(0, 0, 0);
+            border-radius: 10px;
+            font-size: 25px;
+            width: 170px;
+            height: 55px;
+        }
+        .hidden{
+            display: none;
+        }
+    </style>
+
+</head>
+<body>
+    <table id="chessboard">
+        <tbody>
+            <tr>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+            </tr>
+            <tr>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+            </tr>
+            <tr>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+            </tr>
+            <tr>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+            </tr>
+            <tr>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+            </tr>
+            <tr>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+            </tr>
+            <tr>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+            </tr>
+            <tr>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+                <td class="dark"></td>
+                <td class="light"></td>
+            </tr>
+        </tbody>
+        <div id="gameover" class="hidden">
+            <h1 id="gameovertitle">You Lose!</h1>
+            <p id="gameoverdesc">By checkmate</p>
+            <button id="rematch" onclick="request_rematch()">Rematch</button>
+        </div>
+        <div id="promption">
+            <img src="assets/bq">
+        </div>
+    </table>
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/game.js"></script>
+</html>
