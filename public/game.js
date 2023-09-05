@@ -48,7 +48,7 @@ function emit_move(type, x1, y1, x2, y2, user, id, game_over_condition){
     } else if (type === "joined game"){
         body = JSON.stringify({type: type, id: x1})
     }
-    return fetch('https://odd-red-zebra-tie.cyclic.app/pusher/trigger', {
+    return fetch(window.location.href.match("^(http[s]?:\/\/[^\/]+)")[0] + "/pusher/trigger", {
         method: 'POST',
         body: body,
         headers: { 'Content-Type': 'application/json' }
@@ -821,6 +821,7 @@ function initialize_board(){
                 var piece = document.createElement("img");
                 piece.classList.add("piece");
                 piece.src = "assets/" + (p === p.toUpperCase() ? "w" : "b") + p.toLowerCase() + ".png";
+                console.log(piece.src)
                 board_html_table.appendChild(piece)
     
                 piece.style.left = x*64 + "px";
