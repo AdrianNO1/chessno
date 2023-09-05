@@ -4,7 +4,6 @@ let orgPos = null;
 let offset = {x: 32, y: 32};
 let piece = document.getElementById('p');
 let board_html_table = document.getElementById("chessboard");
-//let board_offset = {x: Number(board_html_table.style.left.replace("px", "")), y: Number(board_html_table.style.top.replace("px", ""))};
 let board_offset = {x: 10, y: 10}
 
 let can_castle = new Array(4).fill(true)
@@ -18,7 +17,8 @@ let emit = false;
 let overwrite = false;
 let castle_rook = false;
 let board_copy;
-let event_function_map = new Map()
+let event_function_map = new Map();
+let currently_promoting_piece = false;
 
 const enpassant = "enpassant";
 const castle = "castle";
@@ -41,10 +41,10 @@ var pusher = new Pusher('136f1a7c7875e0106034', {
 });
 var channel = pusher.subscribe(id);
 
-function emit_move(type, x1, y1, x2, y2, user, id, game_over_condition){
+function emit_move(type, x1, y1, x2, y2, user, id, game_over_condition, promption){
     let body;
     if (type === "move"){
-        body = JSON.stringify({type: type, x1: x1, y1: y1, x2: x2, y2: y2, user: user, id: id, game_over_condition: game_over_condition});
+        body = JSON.stringify({type: type, x1: x1, y1: y1, x2: x2, y2: y2, user: user, id: id, game_over_condition: game_over_condition, promption: promption});
     } else if (type === "joined game"){
         body = JSON.stringify({type: type, id: x1})
     }
@@ -56,7 +56,7 @@ function emit_move(type, x1, y1, x2, y2, user, id, game_over_condition){
 }
 
 channel.bind('start game', function(data) {
-    gamestart_sound.play().catch() //
+    gamestart_sound.play().catch()
     console.log('Game is starting!');
     enough_players = true;
     turn = "white";
@@ -88,7 +88,7 @@ channel.bind('move', function(data) {
     if (data.user != user){
         emit = false;
         overwrite = true;
-        move_piece(data.x1, data.y1, data.x2, data.y2);
+        move_piece(data.x1, data.y1, data.x2, data.y2, promption=data.);
         turn = color
         overwrite = false;
 
@@ -114,37 +114,6 @@ channel.bind('move', function(data) {
         game_over("Draw", "By repetition")
     }
 });
-
-//socket.on("move", (x1, y1, x2, y2, player, id, game_over_condition) => {
-//    if (player != user){
-//        emit = false;
-//        overwrite = true;
-//        move_piece(x1, y1, x2, y2);
-//        turn = color
-//        overwrite = false;
-//
-//    }
-//
-//    if (game_over_condition === "white checkmate"){
-//        if (color === "white"){
-//            game_over("You Lose!", "By checkmate")
-//        } else{
-//            game_over("You Win!", "By checkmate")
-//        }
-//    }
-//    else if (game_over_condition === "black checkmate"){
-//        if (color === "black"){
-//            game_over("You Lose!", "By checkmate")
-//        } else{
-//            game_over("You Win!", "By checkmate")
-//        }
-//    }
-//    else if (game_over_condition === "stalemate"){
-//        game_over("Draw", "By stalemate")
-//    } else if (game_over_condition === "repetition"){
-//        game_over("Draw", "By repetition")
-//    }
-//});
 
 /* TODO
 
@@ -482,9 +451,41 @@ function get_legal_moves_for_piece(x, y, board2=board, legal=true){
     return moves
 }
 
-function move_piece(x1, y1, x2, y2, piece){
-    //console.log("from:", x1, y1);
-    //console.log("to:", x2, y2);
+function move_piece(x1, y1, x2, y2, piece, promption){
+    console.log(promption)
+    console.log(x1, y1, x2, y2)
+    console.log(board[y1][x1])
+
+    if (!piece){
+        piece = Array.from(document.getElementsByClassName("piece")).find((piece) => (piece.style.left.replace("px", ""))/64 == x1 && (color === "black" ? 7 : piece.style.top.replace("px", "")/32) - (piece.style.top.replace("px", ""))/64 == y1)
+    }
+
+    if (!overwrite && !promption && (board[y1][x1] === "P" && y2 === 0 || board[y1][x1] === "p" && y2 === 7)){
+        currently_promoting_piece = true;
+        for (let i = 0; i <= 3; i++){
+            let piece2 = document.createElement("img");
+            piece2.classList.add("promotion_piece");
+            let pc = ["q", "n", "r", "b"][i]
+            piece2.src = "assets/" + (board[y1][x1] === board[y1][x1].toUpperCase() ? "w" : "b") + pc + ".png";
+            board_html_table.appendChild(piece2)
+    
+            piece2.style.left = x2*64 + "px";
+            piece2.style.top  = (color === "black" ? 64*7 : (y2+i)*64*2) - (y2+i)*64 + "px";
+            piece2.style.zIndex = "6";
+            
+            piece2.addEventListener("mousedown", () => {
+                console.log("asd")
+                move_piece(x1, y1, x2, y2, piece, board[y1][x1] === board[y1][x1].toUpperCase() ? pc.toUpperCase() : pc)
+                currently_promoting_piece = false
+                Array.from(document.getElementsByClassName("promotion_piece")).forEach(x => {
+                    x.remove()
+                })
+
+                piece.src  = "assets/" + (board[y1][x1] === board[y1][x1].toUpperCase() ? "w" : "b") + pc + ".png";
+            });
+        }
+        return;
+    }
 
     if (color === "black" && !overwrite && !castle_rook){
         y1 = 7-y1
@@ -497,9 +498,6 @@ function move_piece(x1, y1, x2, y2, piece){
     
     selectedPieceLegalMoves = get_legal_moves_for_piece(x1, y1)
     
-    if (!piece){
-        piece = Array.from(document.getElementsByClassName("piece")).find((piece) => (piece.style.left.replace("px", ""))/64 == x1 && (color === "black" ? 7 : piece.style.top.replace("px", "")/32) - (piece.style.top.replace("px", ""))/64 == y1)
-    }
 
     let has_castled;
     if (board[y1][x1].toLowerCase() === "k"){
@@ -602,7 +600,7 @@ function move_piece(x1, y1, x2, y2, piece){
     if (board[y2][x2] !== ""){
         play_capture = true;
     }
-    board[y2][x2] = board[y1][x1];
+    board[y2][x2] = promption ? promption : board[y1][x1];
     board[y1][x1] = "";
     
     piece.style.left = x2*64 + 'px';
@@ -739,7 +737,7 @@ function move_piece(x1, y1, x2, y2, piece){
                 return;
             }
         })
-        emit_move("move", x1, y1, x2, y2, user, id);
+        emit_move("move", x1, y1, x2, y2, user, id, undefined, promption);
     }
 }
 
@@ -766,7 +764,7 @@ function get_all_legal_moves(color){
 
 function create_piece_clicked_event_function(piece){
     return function (event){
-        if (event.button !== 0){
+        if (event.button !== 0 || currently_promoting_piece){
             return;
         }
         clear_legal_move_indicators();
@@ -796,6 +794,9 @@ function create_piece_clicked_event_function(piece){
             node.style.top  = (color === "black" ? 64*7 : pos.y*64*2) - pos.y*64 + 'px';
             
             node.addEventListener("mousedown", function(event){
+                if (currently_promoting_piece){
+                    return
+                }
                 var gridX = Math.floor((event.clientX-board_offset.x)/64)
                 var gridY = Math.floor((event.clientY-board_offset.y)/64)
                 
@@ -865,6 +866,9 @@ function initialize_board(){
     }, true);
     
     board_html_table.addEventListener("mousedown", function(event){
+        if (currently_promoting_piece){
+            return
+        }
         if (event.target.tagName === "TD"){
             clear_legal_move_indicators()
         }

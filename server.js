@@ -7,8 +7,6 @@ const app = express();
 const port = 3507;
 const server = http.createServer(app);
 
-console.log("AAAAAAAAAAAAAAAA")
-
 const pusher = new Pusher({
   appId: "1663963",
   key: "136f1a7c7875e0106034",
@@ -78,8 +76,6 @@ app.post('/lobby', (req, res) => {
         }
     }
     console.log(games)
-    
-    //res.json({ message: 'Received your message!' });
 });
 
 app.post('/pusher/trigger', (req, res) => {
@@ -109,5 +105,4 @@ app.post('/pusher/trigger', (req, res) => {
 
 server.listen(port, () => {
     console.log("Server running");
-    console.log("games:", games)
 });

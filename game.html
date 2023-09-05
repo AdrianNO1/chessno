@@ -96,8 +96,14 @@
         .hidden{
             display: none;
         }
-        #promption{
-            position: relative;
+        .promotion_piece{
+            width: 4em;
+            height: 4em;
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            z-index: 6;
+            background-color: rgb(93, 190, 13);
         }
     </style>
 
@@ -190,9 +196,6 @@
             <h1 id="gameovertitle">You Lose!</h1>
             <p id="gameoverdesc">By checkmate</p>
             <button id="rematch" onclick="request_rematch()">Rematch</button>
-        </div>
-        <div id="promption">
-            <!--<img src="assets/bq">--->
         </div>
     </table>
 </body>
