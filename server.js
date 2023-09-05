@@ -107,5 +107,6 @@ app.post('/pusher/trigger', (req, res) => {
 });
 
 server.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
+    console.log("Server running");
+    console.log("games:", games)
 });
