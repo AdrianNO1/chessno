@@ -7,6 +7,7 @@ const app = express();
 const port = 3507;
 const server = http.createServer(app);
 
+console.log("AAAAAAAAAAAAAAAA")
 
 const pusher = new Pusher({
   appId: "1663963",
