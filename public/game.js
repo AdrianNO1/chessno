@@ -88,7 +88,7 @@ channel.bind('move', function(data) {
     if (data.user != user){
         emit = false;
         overwrite = true;
-        move_piece(data.x1, data.y1, data.x2, data.y2, promption=data.);
+        move_piece(data.x1, data.y1, data.x2, data.y2, promption=data.promption);
         turn = color
         overwrite = false;
 
