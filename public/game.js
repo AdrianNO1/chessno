@@ -39,7 +39,7 @@ var socket = io();
 function emit_move(x1, y1, x2, y2, user, id, game_over_condition, promption){
     socket.emit("move", x1, y1, x2, y2, user, id, game_over_condition, promption)
 }
-
+// test
 socket.on('start game', (x) => {
     user = x
     gamestart_sound.play().catch()
