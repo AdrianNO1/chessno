@@ -16,6 +16,7 @@ let color = null;
 let emit = false;
 let overwrite = false;
 let castle_rook = false;
+let promption;
 let board_copy;
 let event_function_map = new Map();
 let currently_promoting_piece = false;
@@ -88,10 +89,11 @@ channel.bind('move', function(data) {
     if (data.user != user){
         emit = false;
         overwrite = true;
-        move_piece(data.x1, data.y1, data.x2, data.y2, promption=data.promption);
+        promption = data.promption;
+        move_piece(data.x1, data.y1, data.x2, data.y2);
+        promption = undefined;
         turn = color
         overwrite = false;
-
     }
 
     if (data.game_over_condition === "white checkmate"){
@@ -451,16 +453,9 @@ function get_legal_moves_for_piece(x, y, board2=board, legal=true){
     return moves
 }
 
-function move_piece(x1, y1, x2, y2, piece, promption){
-    console.log(promption)
-    console.log(x1, y1, x2, y2)
-    console.log(board[y1][x1])
-
-    if (!piece){
-        piece = Array.from(document.getElementsByClassName("piece")).find((piece) => (piece.style.left.replace("px", ""))/64 == x1 && (color === "black" ? 7 : piece.style.top.replace("px", "")/32) - (piece.style.top.replace("px", ""))/64 == y1)
-    }
-
-    if (!overwrite && !promption && (board[y1][x1] === "P" && y2 === 0 || board[y1][x1] === "p" && y2 === 7)){
+function move_piece(x1, y1, x2, y2, piece){
+    if (!overwrite && !promption && board[y1][x1].toLowerCase() === "p" && y2 === 0){
+        console.log("promoting")
         currently_promoting_piece = true;
         for (let i = 0; i <= 3; i++){
             let piece2 = document.createElement("img");
@@ -468,28 +463,39 @@ function move_piece(x1, y1, x2, y2, piece, promption){
             let pc = ["q", "n", "r", "b"][i]
             piece2.src = "assets/" + (board[y1][x1] === board[y1][x1].toUpperCase() ? "w" : "b") + pc + ".png";
             board_html_table.appendChild(piece2)
-    
+            
             piece2.style.left = x2*64 + "px";
             piece2.style.top  = (color === "black" ? 64*7 : (y2+i)*64*2) - (y2+i)*64 + "px";
             piece2.style.zIndex = "6";
+            let piece = Array.from(document.getElementsByClassName("piece")).find((piece) => (piece.style.left.replace("px", ""))/64 == x1 && (color === "black" ? 7 : piece.style.top.replace("px", "")/32) - (piece.style.top.replace("px", ""))/64 == y1)
             
             piece2.addEventListener("mousedown", () => {
-                console.log("asd")
-                move_piece(x1, y1, x2, y2, piece, board[y1][x1] === board[y1][x1].toUpperCase() ? pc.toUpperCase() : pc)
+                promption = board[y1][x1] === board[y1][x1].toUpperCase() ? pc.toUpperCase() : pc;
+                move_piece(x1, y1, x2, y2, piece)
+                promption = undefined;
                 currently_promoting_piece = false
                 Array.from(document.getElementsByClassName("promotion_piece")).forEach(x => {
                     x.remove()
                 })
-
-                piece.src  = "assets/" + (board[y1][x1] === board[y1][x1].toUpperCase() ? "w" : "b") + pc + ".png";
+                piece.style.left = x2*64 + 'px';
+                piece.style.top  = (color === "black" ? 64*7 : y2*64*2) - y2*64 + 'px';
+                piece.style.zIndex = "2"
             });
         }
         return;
     }
-
+    
     if (color === "black" && !overwrite && !castle_rook){
         y1 = 7-y1
         y2 = 7-y2
+    }
+    
+    if (!piece){
+        piece = Array.from(document.getElementsByClassName("piece")).find((piece) => (piece.style.left.replace("px", ""))/64 == x1 && (color === "black" ? 7 : piece.style.top.replace("px", "")/32) - (piece.style.top.replace("px", ""))/64 == y1)
+    }
+
+    if (promption){
+        piece.src  = "assets/" + (board[y1][x1] === board[y1][x1].toUpperCase() ? "w" : "b") + promption.toLowerCase() + ".png";
     }
     
     if (turn !== color && !overwrite || x1 === x2 && y1 === y2){
@@ -498,7 +504,7 @@ function move_piece(x1, y1, x2, y2, piece, promption){
     
     selectedPieceLegalMoves = get_legal_moves_for_piece(x1, y1)
     
-
+    
     let has_castled;
     if (board[y1][x1].toLowerCase() === "k"){
         if (selectedPieceLegalMoves.some(move => move.x === x2 && move.y === y2 && move.special === castle)){
@@ -822,7 +828,7 @@ function initialize_board(){
                 var piece = document.createElement("img");
                 piece.classList.add("piece");
                 piece.src = "assets/" + (p === p.toUpperCase() ? "w" : "b") + p.toLowerCase() + ".png";
-                console.log(piece.src)
+
                 board_html_table.appendChild(piece)
     
                 piece.style.left = x*64 + "px";
