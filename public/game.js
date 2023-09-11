@@ -34,41 +34,24 @@ let gameover_sound = new Audio("sounds/gameover.wav");
 let enough_players = false;
 let user;
 let id = window.location.href.split("/")[window.location.href.split("/").length-1];
+var socket = io();
 
-Pusher.logToConsole = true;
-
-var pusher = new Pusher('136f1a7c7875e0106034', {
-    cluster: 'eu'
-});
-var channel = pusher.subscribe(id);
-
-function emit_move(type, x1, y1, x2, y2, user, id, game_over_condition, promption){
-    let body;
-    if (type === "move"){
-        body = JSON.stringify({type: type, x1: x1, y1: y1, x2: x2, y2: y2, user: user, id: id, game_over_condition: game_over_condition, promption: promption});
-    } else if (type === "joined game"){
-        body = JSON.stringify({type: type, id: x1})
-    }
-    return fetch(window.location.href.match("^(http[s]?:\/\/[^\/]+)")[0] + "/pusher/trigger", {
-        method: 'POST',
-        body: body,
-        headers: { 'Content-Type': 'application/json' }
-    }).then(response => response.json());
+function emit_move(x1, y1, x2, y2, user, id, game_over_condition, promption){
+    socket.emit("move", x1, y1, x2, y2, user, id, game_over_condition, promption)
 }
 
-channel.bind('start game', function(data) {
+socket.on('start game', (x) => {
+    user = x
     gamestart_sound.play().catch()
     console.log('Game is starting!');
+    console.log("You are player", x)
+    color = user === 1 ? "white" : "black"
     enough_players = true;
     turn = "white";
     initialize_board();
 });
 
-emit_move('joined game', id).then(response => {
-    user = response.firstplayer ? 1 : 2
-    console.log("You are player", user)
-    color = user === 1 ? "white" : "black";
-});
+socket.emit('joined game', id);
 
 
 function request_rematch(){
@@ -85,34 +68,34 @@ function game_over(title, desc){
     document.getElementById("gameover").classList.remove("hidden")
 }
 
-channel.bind('move', function(data) {
-    if (data.user != user){
+socket.on("move", (x1, y1, x2, y2, player, id, game_over_condition) => {
+    if (user != player){
         emit = false;
         overwrite = true;
-        promption = data.promption;
-        move_piece(data.x1, data.y1, data.x2, data.y2);
+        promption = promption;
+        move_piece(x1, y1, x2, y2);
         promption = undefined;
         turn = color
         overwrite = false;
     }
 
-    if (data.game_over_condition === "white checkmate"){
+    if (game_over_condition === "white checkmate"){
         if (color === "white"){
             game_over("You Lose!", "By checkmate")
         } else{
             game_over("You Win!", "By checkmate")
         }
     }
-    else if (data.game_over_condition === "black checkmate"){
+    else if (game_over_condition === "black checkmate"){
         if (color === "black"){
             game_over("You Lose!", "By checkmate")
         } else{
             game_over("You Win!", "By checkmate")
         }
     }
-    else if (data.game_over_condition === "stalemate"){
+    else if (game_over_condition === "stalemate"){
         game_over("Draw", "By stalemate")
-    } else if (data.game_over_condition === "repetition"){
+    } else if (game_over_condition === "repetition"){
         game_over("Draw", "By repetition")
     }
 });
@@ -698,18 +681,18 @@ function move_piece(x1, y1, x2, y2, piece){
     if (emit && !castle_rook){
         if (turn === "white" && all_legal_moves_white.length === 0){
             if (white_in_check){
-                emit_move("move", x1, y1, x2, y2, user, id, "white checkmate");
+                emit_move(x1, y1, x2, y2, user, id, "white checkmate");
             } else{
-                emit_move("move", x1, y1, x2, y2, user, id, "stalemate");
+                emit_move(x1, y1, x2, y2, user, id, "stalemate");
             }
             gameover_sound.play();
             return;
         }
         else if (turn === "black" && all_legal_moves_black.length === 0){
             if (black_in_check){
-                emit_move("move", x1, y1, x2, y2, user, id, "black checkmate");
+                emit_move(x1, y1, x2, y2, user, id, "black checkmate");
             } else{
-                emit_move("move", x1, y1, x2, y2, user, id, "stalemate");
+                emit_move(x1, y1, x2, y2, user, id, "stalemate");
             }
             gameover_sound.play();
             return;
@@ -738,12 +721,12 @@ function move_piece(x1, y1, x2, y2, piece){
         }
         Object.values(counts).forEach(x => {
             if (x === 3){
-                emit_move("move", x1, y1, x2, y2, user, id, "repetition");
+                emit_move(x1, y1, x2, y2, user, id, "repetition");
                 gameover_sound.play();
                 return;
             }
         })
-        emit_move("move", x1, y1, x2, y2, user, id, undefined, promption);
+        emit_move(x1, y1, x2, y2, user, id, undefined, promption);
     }
 }
 

@@ -2,19 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const http = require('http');
-const Pusher = require("pusher");
+const socketIo = require('socket.io');
 const app = express();
-const port = 3507;
 const server = http.createServer(app);
-
-const pusher = new Pusher({
-  appId: "1663963",
-  key: "136f1a7c7875e0106034",
-  secret: "36cc3dd6fa2261f0ec2d",
-  cluster: "eu",
-  useTLS: true
-});
-
+const io = socketIo(server);
+const port = 3507;
 
 let games = [];
 
@@ -78,30 +70,32 @@ app.post('/lobby', (req, res) => {
     console.log(games)
 });
 
-app.post('/pusher/trigger', (req, res) => {
-    const payload = req.body;
-    let firstplayer = false;
-    console.log("recieved", payload)
-    if (payload.type === "joined game"){
-        let game = games.find(x => payload.id.toString() === x.id);
+io.on('connection', (socket) => {
+    socket.on('joined game', (gameId) => {
+        let game = games.find(x => gameId === x.id);
         if (game) {
-            game.players.push(Math.random()*100);
+            game.players.push(socket);
             if (game.players.length === 2) {
-                pusher.trigger(payload.id.toString(), 'start game', payload);
-            } else {
-                firstplayer = true
+                var i = 0
+                game.players.forEach(playerSocket => {
+                    i++
+                    playerSocket.emit('start game', i);
+                });
             }
         }
-    } else if (payload.type === "move"){
-        let game = games.find(x => payload.id.toString() === x.id);
-        if(payload.game_over_condition){
-            game.game_state = payload.game_over_condition;
-        }
-        pusher.trigger(payload.id.toString(), 'move', payload);
-    }
-    payload.firstplayer = firstplayer
-    res.send(payload);
+    });
+    socket.on("move", (x1, y1, x2, y2, user, id, game_over_condition, promption) => {
+        let game = games.find(x => id.toString() === x.id);
+        game.players.forEach(playerSocket => {
+            if(game_over_condition){
+                game.game_state = game_over_condition;
+            }
+            playerSocket.emit("move", x1, y1, x2, y2, user, id, game_over_condition, promption);
+        });
+    })
 });
+
+
 
 server.listen(port, () => {
     console.log("Server running");
