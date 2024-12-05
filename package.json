@@ -12,6 +12,7 @@
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "play-sound": "^1.1.6",
-    "pusher": "^5.1.3"
+    "pusher": "^5.1.3",
+    "socket.io": "^4.8.1"
   }
 }

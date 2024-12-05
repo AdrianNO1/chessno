@@ -6,7 +6,7 @@ const socketIo = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
-const port = 3507;
+const port = 3000;
 
 let games = [];
 
@@ -97,6 +97,6 @@ io.on('connection', (socket) => {
 
 
 
-server.listen(port, () => {
+server.listen(port, '0.0.0.0', () => {
     console.log("Server running");
 });
